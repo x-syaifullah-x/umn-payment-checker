@@ -1,0 +1,57 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+#  pull_request:
+#    branches: [ started ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+
+      - name: Replace gradle properties
+        run: |
+          ORG_GRADLE_JVM=`cat gradle.properties | grep org.gradle.jvmargs`
+          sed -i 's/'"${ORG_GRADLE_JVM}"'/org.gradle.jvmargs=-Xmx8192m -Dfile.encoding=UTF-8/g' gradle.properties
+          cat gradle.properties | grep org.gradle.jvmargs
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew clean build
+
+      - name: BundleRelease
+        run: ./gradlew bundleRelease
+
+      - name: upload outputs
+        uses: actions/upload-artifact@v2
+        with:
+          name: outputs
+          path: app/build/outputs
+
+      - name: upload apk debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: apk-debug-com.doc.paymentchecker
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: upload apk release
+        uses: actions/upload-artifact@v2
+        with:
+          name: apk-release-com.doc.paymentchecker
+          path: app/build/outputs/apk/release/app-release.apk
+
+      - name: upload aab
+        uses: actions/upload-artifact@v2
+        with:
+          name: aab-release-com.doc.paymentchecker
+          path: app/build/outputs/bundle/release/app-release.aab

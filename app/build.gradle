@@ -1,0 +1,66 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    def packageName = "com.doc.paymentchecker"
+    namespace packageName
+
+    compileSdk 33
+    buildToolsVersion "33.0.2"
+
+    defaultConfig {
+        applicationId packageName
+        minSdk 23
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+
+    }
+
+    signingConfigs {
+        debug {
+            def store_file_debug = file("$rootDir/key-store/paycheck.jks")
+            storeFile store_file_debug
+            storePassword "paycheck"
+            keyAlias "paycheck"
+            keyPassword "paycheck"
+        }
+
+        release {
+            def store_file_release = file("$rootDir/key-store/paycheck.jks")
+            storeFile store_file_release
+            storePassword "paycheck"
+            keyAlias "paycheck"
+            keyPassword "paycheck"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            signingConfig signingConfigs.release
+        }
+
+        release {
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
+
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.13.0"
+    implementation "com.android.volley:volley:1.2.1"
+
+    implementation "androidx.leanback:leanback:1.0.0"
+    implementation "com.github.bumptech.glide:glide:4.15.1"
+    implementation "com.google.android.gms:play-services-ads-identifier:18.0.1"
+}

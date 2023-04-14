@@ -1,0 +1,31 @@
+buildscript {
+
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:7.4.2"
+    }
+}
+
+allprojects {
+
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+
+    String userName = System.getProperty("user.name")
+    if (userName == "xxx") {
+        String userHomePath = System.getProperty("user.home")
+        buildDir = "${userHomePath}/.cache/android/studio/project/${rootProject.name}/${project.name}/build"
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

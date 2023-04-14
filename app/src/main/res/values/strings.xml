@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">UMNXPD</string>
+
+    <!-- Error messages -->
+
+    <string name="applovin_ad_unit_id_type_banner">370200ade7e02ecd</string>
+    <string name="applovin_sdk_key">zzWuLBq8NTCIhWHKmcTLXfazN9_JXAK3NGAZmkIEQn54cOESfbGVFGhqbKuE2DaT9vyZHzu7f0sQOKC5O9HDdn</string>
+</resources>
