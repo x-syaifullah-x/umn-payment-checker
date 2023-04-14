@@ -1,0 +1,4 @@
+<resources>
+
+    <style name="Theme.PaymentChecker" parent="@style/Theme.Leanback" />
+</resources>
