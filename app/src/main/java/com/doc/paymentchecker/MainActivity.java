@@ -2,14 +2,27 @@ package com.doc.paymentchecker;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import com.android.volley.Request;
@@ -24,6 +37,15 @@ import com.applovin.sdk.AppLovinSdkSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,20 +54,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
 
-/*
- * Main Activity class that loads {@link MainFragment}.
- */
 public class MainActivity extends FragmentActivity {
-    Button connect;
-    EditText usernameed;
-    EditText passworded;
-    String username;
-    String password;
-    TextView Expiry;
-    android.widget.FrameLayout login;
-    android.widget.FrameLayout qr;
-    SharedPreferences myPrefs;
+    private Button connect;
+    private EditText usernameed;
+    private EditText passworded;
+    private String username;
+    private String password;
+    private TextView Expiry;
+    private android.widget.FrameLayout login;
+    private android.widget.FrameLayout qr;
+    private SharedPreferences myPrefs;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,6 +73,8 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
 
         loadAd(findViewById(R.id.adView));
+
+        showMessageBoard(findViewById(R.id.message_board));
 
         usernameed = findViewById(R.id.username_textbox);
         passworded = findViewById(R.id.password_textbox);
@@ -69,19 +91,45 @@ public class MainActivity extends FragmentActivity {
             login.setVisibility(View.VISIBLE);
 
         }
-        connect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                username = String.valueOf(usernameed.getText());
-                password = String.valueOf(passworded.getText());
-                if (!(username.isEmpty() || password.isEmpty())) {
-
-                    chkexpiry(username, password);
-
-
-                }
+        connect.setOnClickListener(view -> {
+            username = String.valueOf(usernameed.getText());
+            password = String.valueOf(passworded.getText());
+            if (!(username.isEmpty() || password.isEmpty())) {
+                chkexpiry(username, password);
             }
         });
+    }
+
+    private void showMessageBoard(TextView view) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("message_board")
+                .addSnapshotListener(this, (value, error) -> {
+                    if (value == null) return;
+                    for (DocumentChange documentChange : value.getDocumentChanges()) {
+                        String id = documentChange.getDocument().getId();
+                        if (id.equals("title")) {
+                            StringBuilder sb = new StringBuilder();
+                            Resources r = getResources();
+                            float screenWidth = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400, r.getDisplayMetrics()));
+                            String text = documentChange.getDocument().getString("text");
+                            if (text != null && !text.isEmpty()) {
+                                sb.replace(0, sb.toString().length(), "");
+                                sb.append(text);
+                                Paint paint = new Paint();
+                                paint.setTextSize(view.getTextSize());
+                                float textWidth = paint.measureText(sb.toString());
+//                                float screenWidth = getResources().getDisplayMetrics().widthPixels;
+                                if (textWidth <= screenWidth) {
+                                    int padding = (int) (screenWidth - textWidth) / 2;
+                                    view.setPadding(padding, 0, padding, 0);
+                                    sb.insert(0, "     ").append("     ");
+                                }
+                                view.setText(sb.toString());
+                                view.setSelected(true);
+                            }
+                        }
+                    }
+                });
     }
 
     private void loadAd(MaxAdView adView) {

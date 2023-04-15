@@ -1,10 +1,32 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-//plugins {
-//    id 'com.android.application' version '7.3.1' apply false
-//    id 'com.android.library' version '7.3.1' apply false
-//}
+buildscript {
 
-plugins {
-    id 'com.android.application' version '7.4.2' apply false
-    id 'com.android.library' version '7.4.2' apply false
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:7.4.2"
+        classpath "com.google.gms:google-services:4.3.15"
+    }
+}
+
+allprojects {
+
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+
+    String userName = System.getProperty("user.name")
+    if (userName == "xxx") {
+        String userHomePath = System.getProperty("user.home")
+        buildDir = "${userHomePath}/.cache/android/studio/project/${rootProject.name}/${project.name}/build"
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

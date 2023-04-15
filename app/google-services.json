@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "125179206065",
+    "project_id": "payment-cheker",
+    "storage_bucket": "payment-cheker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:125179206065:android:b0ed2c5d1b0a0ce4158590",
+        "android_client_info": {
+          "package_name": "com.doc.paymentchecker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "125179206065-ics0nhn0r21lvhmhb2jatpb4nt3tei1n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdsXNdWj0dpP8VGRljxOSCJUtCTwuC24g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "125179206065-ics0nhn0r21lvhmhb2jatpb4nt3tei1n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

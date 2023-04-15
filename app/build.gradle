@@ -1,15 +1,17 @@
 plugins {
-    id 'com.android.application'
+    id "com.android.application"
+    id "com.google.gms.google-services"
 }
 
 android {
-    namespace 'com.doc.paymentchecker'
+    def packageName = "com.doc.paymentchecker"
+    namespace packageName
 
     compileSdk 33
     buildToolsVersion "33.0.2"
 
     defaultConfig {
-        applicationId "com.doc.paymentchecker"
+        applicationId packageName
         minSdk 23
         targetSdk 33
         versionCode 1
@@ -19,15 +21,15 @@ android {
 
     signingConfigs {
         debug {
-            def store_file_release = file("$rootDir/paycheck.jks")
-            storeFile store_file_release
+            def store_file_debug = file("$rootDir/key-store/paycheck.jks")
+            storeFile store_file_debug
             storePassword "paycheck"
             keyAlias "paycheck"
             keyPassword "paycheck"
         }
 
         release {
-            def store_file_release = file("$rootDir/paycheck.jks")
+            def store_file_release = file("$rootDir/key-store/paycheck.jks")
             storeFile store_file_release
             storePassword "paycheck"
             keyAlias "paycheck"
@@ -56,10 +58,15 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
 
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-    implementation 'com.android.volley:volley:1.2.1'
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.13.0"
+    implementation "com.android.volley:volley:1.2.1"
 
-    implementation 'androidx.leanback:leanback:1.0.0'
-    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation "androidx.leanback:leanback:1.0.0"
+    implementation "com.github.bumptech.glide:glide:4.15.1"
     implementation "com.google.android.gms:play-services-ads-identifier:18.0.1"
+//    implementation "androidx.appcompat:appcompat:1.6.1"
+//    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+
+    implementation platform("com.google.firebase:firebase-bom:31.5.0")
+    implementation "com.google.firebase:firebase-firestore"
 }
