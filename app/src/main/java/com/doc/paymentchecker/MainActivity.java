@@ -1,6 +1,7 @@
 package com.doc.paymentchecker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Paint;
@@ -8,11 +9,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ShareCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.android.volley.Request;
@@ -85,6 +90,25 @@ public class MainActivity extends FragmentActivity {
             if (usernameInput.isEmpty()) return;
             if (passwordInput.isEmpty()) return;
             chkexpiry(usernameInput, passwordInput);
+        });
+
+        findViewById(R.id.btn_send).setOnClickListener(v -> {
+            EditText etSubject = findViewById(R.id.et_subject);
+            String inputSubject = etSubject.getText().toString();
+//            if (inputSubject.isEmpty())
+//                return;
+            EditText etMessage = findViewById(R.id.et_message);
+            String inputMessage = etMessage.getText().toString();
+//            if (inputMessage.isEmpty())
+//                return;
+
+            ShareCompat.IntentBuilder.from(MainActivity.this)
+                    .setType("message/rfc822")
+                    .addEmailTo("support@umntv.net")
+                    .setSubject(inputSubject)
+                    .setText("username: " + username + "\n\n\n" + inputMessage)
+                    .setChooserTitle("Choose an email client :")
+                    .startChooser();
         });
     }
 
