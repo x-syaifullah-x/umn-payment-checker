@@ -92,24 +92,24 @@ public class MainActivity extends FragmentActivity {
             chkexpiry(usernameInput, passwordInput);
         });
 
-        findViewById(R.id.btn_send).setOnClickListener(v -> {
-            EditText etSubject = findViewById(R.id.et_subject);
-            String inputSubject = etSubject.getText().toString();
-//            if (inputSubject.isEmpty())
-//                return;
-            EditText etMessage = findViewById(R.id.et_message);
-            String inputMessage = etMessage.getText().toString();
-//            if (inputMessage.isEmpty())
-//                return;
-
-            ShareCompat.IntentBuilder.from(MainActivity.this)
-                    .setType("message/rfc822")
-                    .addEmailTo("support@umntv.net")
-                    .setSubject(inputSubject)
-                    .setText("username: " + username + "\n\n\n" + inputMessage)
-                    .setChooserTitle("Choose an email client :")
-                    .startChooser();
-        });
+//        findViewById(R.id.btn_send).setOnClickListener(v -> {
+//            EditText etSubject = findViewById(R.id.et_subject);
+//            String inputSubject = etSubject.getText().toString();
+////            if (inputSubject.isEmpty())
+////                return;
+//            EditText etMessage = findViewById(R.id.et_message);
+//            String inputMessage = etMessage.getText().toString();
+////            if (inputMessage.isEmpty())
+////                return;
+//
+//            ShareCompat.IntentBuilder.from(MainActivity.this)
+//                    .setType("message/rfc822")
+//                    .addEmailTo("support@umntv.net")
+//                    .setSubject(inputSubject)
+//                    .setText("username: " + username + "\n\n\n" + inputMessage)
+//                    .setChooserTitle("Choose an email client :")
+//                    .startChooser();
+//        });
     }
 
     private void loadAd(MaxAdView adView) {
