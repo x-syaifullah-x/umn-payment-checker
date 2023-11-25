@@ -18,6 +18,7 @@
         android:maxLines="1"
         android:singleLine="true"
         android:textSize="32sp"
+        tools:ignore="EllipsizeMaxLines"
         tools:text="Welcome to payment checker" />
 
     <!-- Login layout -->

@@ -1,0 +1,30 @@
+{
+  "user_info": {
+    "username": "054ad914998b",
+    "password": "22b5ff5",
+    "message": "",
+    "auth": 1,
+    "status": "Active",
+    "exp_date": "1710543600",
+    "is_trial": "0",
+    "active_cons": "0",
+    "created_at": "1691964000",
+    "max_connections": "1",
+    "allowed_output_formats": [
+      "m3u8",
+      "ts",
+      "rtmp"
+    ]
+  },
+  "server_info": {
+    "url": "line.my-tv.cc",
+    "port": "80",
+    "https_port": "443",
+    "server_protocol": "http",
+    "rtmp_port": "25462",
+    "timezone": "Europe\/Amsterdam",
+    "timestamp_now": 1700885558,
+    "time_now": "2023-11-25 05:12:38",
+    "process": true
+  }
+}

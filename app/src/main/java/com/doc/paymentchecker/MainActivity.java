@@ -4,132 +4,94 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Paint;
-import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.applovin.mediation.ads.MaxAdView;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.doc.paymentchecker.databinding.ActivityMainBinding;
 
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends FragmentActivity {
-    private Button connect;
-    private EditText usernameed;
-    private EditText passworded;
-    private String username;
-    private String password;
-    private TextView Expiry;
-    private android.widget.FrameLayout login;
-    private android.widget.FrameLayout qr;
-    private SharedPreferences myPrefs;
+
+    private static final String PREF_NAME = "my_prefs";
+    private static final String PREF_KEY_USER_NAME = "user_name";
+    private static final String PREF_KEY_PASSWORD = "password";
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    private ActivityMainBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        loadAd(findViewById(R.id.adView));
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
 
-        showMessageBoard(findViewById(R.id.message_board));
+        setContentView(binding.getRoot());
 
-        usernameed = findViewById(R.id.username_textbox);
-        passworded = findViewById(R.id.password_textbox);
-        connect = findViewById(R.id.login_button);
-        Expiry = findViewById(R.id.expiry_text);
-        login = findViewById(R.id.login_layout);
-        qr = findViewById(R.id.qr_code_layout);
-        myPrefs = getSharedPreferences("myPrefs", MODE_PRIVATE);
-        if (!(Objects.requireNonNull(myPrefs.getString("usernam", "")).isEmpty() && Objects.requireNonNull(myPrefs.getString("passwor", "")).isEmpty())) {
+        loadAd(binding.adView);
 
-            chkexpiry(myPrefs.getString("usernam", ""), myPrefs.getString("passwor", ""));
+        showMessageBoard(binding.messageBoard);
 
+        SharedPreferences sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String userName = sharedPreferences.getString(PREF_KEY_USER_NAME, "");
+        String password = sharedPreferences.getString(PREF_KEY_PASSWORD, "");
+        if (!userName.isEmpty() && !password.isEmpty()) {
+            checkExpiry(userName, password);
         } else {
-            login.setVisibility(View.VISIBLE);
-
+            binding.loginLayout.setVisibility(View.VISIBLE);
         }
-        connect.setOnClickListener(view -> {
-            username = String.valueOf(usernameed.getText());
-            password = String.valueOf(passworded.getText());
-            if (!(username.isEmpty() || password.isEmpty())) {
-                chkexpiry(username, password);
+        binding.loginButton.setOnClickListener(v -> {
+            String _username = String.valueOf(binding.usernameTextbox.getText());
+            String _password = String.valueOf(binding.passwordTextbox.getText());
+            if (!(_username.isEmpty() || _password.isEmpty())) {
+                checkExpiry(_username, _password);
             }
         });
     }
 
     private void showMessageBoard(TextView view) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("message_board")
-                .addSnapshotListener(this, (value, error) -> {
-                    if (value == null) return;
-                    for (DocumentChange documentChange : value.getDocumentChanges()) {
-                        String id = documentChange.getDocument().getId();
-                        if (id.equals("title")) {
-                            StringBuilder sb = new StringBuilder();
-                            Resources r = getResources();
-                            float screenWidth = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400, r.getDisplayMetrics()));
-                            String text = documentChange.getDocument().getString("text");
-                            if (text != null && !text.isEmpty()) {
-                                sb.replace(0, sb.toString().length(), "");
-                                sb.append(text);
-                                Paint paint = new Paint();
-                                paint.setTextSize(view.getTextSize());
-                                float textWidth = paint.measureText(sb.toString());
-//                                float screenWidth = getResources().getDisplayMetrics().widthPixels;
-                                if (textWidth <= screenWidth) {
-                                    int padding = (int) (screenWidth - textWidth) / 2;
-                                    view.setPadding(padding, 0, padding, 0);
-                                    sb.insert(0, "     ").append("     ");
-                                }
-                                view.setText(sb.toString());
-                                view.setSelected(true);
-                            }
-                        }
-                    }
-                });
+        StringBuilder sb = new StringBuilder();
+        Resources r = getResources();
+        DisplayMetrics displayMetrics = r.getDisplayMetrics();
+        float applyDimension = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400, displayMetrics);
+        float screenWidth = Math.round(applyDimension);
+        String text = "Welcome to payment checker";
+        sb.replace(0, sb.toString().length(), "");
+        sb.append(text);
+        Paint paint = new Paint();
+        paint.setTextSize(view.getTextSize());
+        float textWidth = paint.measureText(sb.toString());
+        if (textWidth <= screenWidth) {
+            int padding = (int) (screenWidth - textWidth) / 2;
+            view.setPadding(padding, 0, padding, 0);
+            sb.insert(0, "     ").append("     ");
+        }
+        view.setText(sb.toString());
+        view.setSelected(true);
     }
 
     private void loadAd(MaxAdView adView) {
@@ -143,54 +105,99 @@ public class MainActivity extends FragmentActivity {
         adView.loadAd();
     }
 
-    private void chkexpiry(String user, String pass) {
-        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
-        String url = "http://line.my-tv.cc/player_api.php?username=" + user.trim() + "&password=" + pass.trim();
+    private void checkExpiry(String user, String pass) {
+        Uri uri = new Uri.Builder()
+                .scheme("http")
+                .authority("line.my-tv.cc")
+                .path("player_api.php")
+                .appendQueryParameter("username", user.trim())
+                .appendQueryParameter("password", pass.trim())
+                .build();
+        new Thread(() -> {
+            HttpURLConnection httpURLConnection = null;
+            try {
+                URL URL = new URL(uri.toString());
+                httpURLConnection = (HttpURLConnection) URL.openConnection();
+                int responseCode = httpURLConnection.getResponseCode();
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.e("firees", response);
-                        if (response.contains("exp_date")) {
-                            ObjectMapper objectMapper = new ObjectMapper();
-                            try {
-                                Map<String, Object> jsonMap = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {
-                                });
-                                String expDate = (String) ((Map<String, Object>) jsonMap.get("user_info")).get("exp_date");
-                                long expDateLong = Long.parseLong(expDate);
-                                Date date = new Date(expDateLong * 1000L);
-                                //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-                                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-                                String expDateFormatted = sdf.format(date);
-                                System.out.println("Expiration date: " + expDateFormatted);
-                                Expiry.setText("EXPIRATION: " + expDateFormatted);
-                                login.setVisibility(View.GONE);
-                                qr.setVisibility(View.VISIBLE);
-                                SharedPreferences.Editor e1 = myPrefs.edit();
-                                e1.putString("usernam", user); // add or overwrite someValue
-                                e1.putString("passwor", pass);
-                                e1.apply();
-                                //Toast.makeText(MainActivity.this,"Expiration date: " + expDateFormatted,Toast.LENGTH_LONG).show();
-
-                            } catch (JsonProcessingException e) {
-                                e.printStackTrace();
+                int buffersSize = 1024 * 1024;
+                byte[] buffers = new byte[buffersSize];
+                StringBuilder result = new StringBuilder();
+                if (responseCode >= 200 && responseCode < 300) {
+                    InputStream is = httpURLConnection.getInputStream();
+                    while (true) {
+                        int readCount = is.read(buffers, 0, buffersSize);
+                        if (readCount != -1) {
+                            if (readCount == buffersSize) {
+                                result.append(new String(buffers));
+                            } else {
+                                result.append(new String(Arrays.copyOf(buffers, readCount)));
                             }
-
                         } else {
-
-                            Toast.makeText(MainActivity.this, "Make sure the User & Password is correct", Toast.LENGTH_LONG).show();
+                            is.close();
+                            break;
                         }
-                        // Handle response
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Error make sure values are correct", Toast.LENGTH_LONG).show();
+                    JSONObject response = new JSONObject(result.toString());
+                    JSONObject userInfo = response.getJSONObject("user_info");
+//                    JSONObject serverInfo = response.getJSONObject("server_info");
+                    String expDate = userInfo.getString("exp_date");
+                    handler.post(() -> {
+                        long expDateLong = Long.parseLong(expDate);
+                        long a = expDateLong * 1000L;
+                        boolean isExp = a <= System.currentTimeMillis();
+                        if (isExp) {
+                            String text = "YOUR ACCOUNT IS EXPIRED";
+                            binding.expiryText.setText(text);
+                        } else {
+                            Date date = new Date(a);
+                            //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy", Locale.getDefault());
+                            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                            String expDateFormatted = sdf.format(date);
+                            String text = "EXPIRATION: " + expDateFormatted;
+                            binding.expiryText.setText(text);
+                        }
+                        binding.loginLayout.setVisibility(View.GONE);
+                        binding.qrCodeLayout.setVisibility(View.VISIBLE);
+                        SharedPreferences.Editor editor =
+                                getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit();
+                        editor.putString(PREF_KEY_USER_NAME, user);
+                        editor.putString(PREF_KEY_PASSWORD, pass);
+                        editor.apply();
+                    });
+                } else {
+                    InputStream is = httpURLConnection.getErrorStream();
+                    while (true) {
+                        int readCount = is.read(buffers, 0, buffersSize);
+                        if (readCount != -1) {
+                            if (readCount == buffersSize) {
+                                result.append(new String(buffers));
+                            } else {
+                                result.append(new String(Arrays.copyOf(buffers, readCount)));
+                            }
+                        } else {
+                            is.close();
+                            break;
+                        }
+                    }
+                    String resultAsString = result.toString();
+                    handler.post(() -> {
+                        if (resultAsString.isBlank()) {
+                            Toast.makeText(this, "Make sure the User & Password is correct", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(this, resultAsString, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                String message = e.getLocalizedMessage();
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            } finally {
+                if (httpURLConnection != null)
+                    httpURLConnection.disconnect();
             }
-        });
-
-        MyRequestQueue.add(stringRequest);
+        }).start();
     }
 }

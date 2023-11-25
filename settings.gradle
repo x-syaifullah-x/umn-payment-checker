@@ -1,4 +1,12 @@
-rootProject.name = "Payment Checker"
-include ':app'
+rootProject.name = "UMN Payment Checker"
+include ":app"
 
-
+String userName = System.getProperty("user.name")
+if (userName == "xxx") {
+    /* https://docs.gradle.org/current/userguide/build_cache.html */
+    buildCache {
+        local {
+            directory = new File("${rootDir}/.gradle", "build-cache")
+        }
+    }
+}
