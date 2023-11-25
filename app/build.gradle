@@ -1,5 +1,6 @@
 plugins {
     id "com.android.application"
+    id "kotlin-android"
 }
 
 android {
@@ -56,6 +57,10 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
     buildFeatures {
         viewBinding true
     }
@@ -66,4 +71,8 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$vAndroidxAppCompat"
     implementation "com.google.android.gms:play-services-ads-identifier:18.0.1"
+
+    testImplementation "junit:junit:$vJunit"
+    testImplementation "org.json:json:$vOrgGson"
+
 }
